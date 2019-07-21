@@ -1,8 +1,11 @@
 
 import pandas as pd
 
+import numpy as np
+
 from scipy.sparse import load_npz
 from model import DistancesModel
+	
 
 
 MENU_ITEMS = '/home/misterion/Development/Datathon 2019/deepmenu/core/data/processed/menu_final.txt'
@@ -19,12 +22,12 @@ class Pipeline:
         self.df['MenuItemID'] = self.df['MenuItemID'].astype(int)      
 
         X = load_npz(EMBEDINGS)
-        
+        X = X.toarray()
         # y = pd.read_csv(LABELS_FILEPATH)['user_id'].values
 
         self.model = DistancesModel()
         self.model.fit(X)
-
+	
     def id_to_descrition(self, id):
         return self.df[self.df['MenuItemID'] == id]
 

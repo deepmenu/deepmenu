@@ -3,6 +3,28 @@ import pysparnn.cluster_index as ci
 from sklearn.metrics import pairwise_distances
 import numpy as np
 
+
+
+def get_close_users(matrix, new_user, top_n=3, metric='euclidean'):
+    dist = pairwise_distances(matrix, new_user.reshape(1,-1), metric=metric)    
+    dist = dist.flatten()
+    idx = np.argsort(dist)[:top_n]    
+    return matrix[idx]
+	
+def get_ids(new_user, closest, top_n=2):
+    answer = []
+    missing = np.where(new_user == 0)
+    missing = np.array([x[1] for x in missing])
+    columns_max = closest.max(axis=0)
+    idx = np.argsort(columns_max)
+    unsorted = np.intersect1d(missing, idx)
+    buf = np.in1d(idx, missing)[::-1]
+    for i,item in enumerate(buf):
+        if item == True:
+            answer.append(idx[::-1][i])
+    
+    return answer[:top_n]
+
 # from annoy import AnnoyIndex
 # class OrderBasedModel(BaseEstimator):
 #   """https://github.com/spotify/annoy
@@ -56,12 +78,21 @@ class UserBasedModel:
 
 
 class DistancesModel:
-  def __init__(self, top_n=4, metric='euclidian'):
+  def __init__(self, n_closest=4, n_items, metric='euclidian'):
     self.top_n = top_n
     self.metric = metric
 
   def fit(self, X):
     self.matrix = X
+	
+	
+	
+  def get_ids(database, user, n_closest, n_items, metric):
+	closest = get_close_users(database, user, n_closest, metric)
+	indexes = predict(user, closest, n_items)
+	return indexes
+
+	
 
   def get_close_user(self, new_user):
       dist = pairwise_distances(self.matrix, new_user, metric=self.metric)        
