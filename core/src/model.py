@@ -2,7 +2,7 @@ from sklearn.base import BaseEstimator
 import pysparnn.cluster_index as ci
 from sklearn.metrics import pairwise_distances
 import numpy as np
-
+import pickle
 
 
 def get_close_users(matrix, new_user, top_n=3, metric='euclidean'):
@@ -73,39 +73,39 @@ class OrderBasedModel(BaseEstimator):
     self.cp.search(X, self.n_neighbours, True)
 
 
+import random
+
 class UserBasedModel:
   pass
 
 
 class DistancesModel:
-  def __init__(self, n_closest=4, n_items, metric='euclidian'):
-    self.top_n = top_n
+  def __init__(self, n_closest=4, n_items=2, metric='euclidian', dict_path, item_dict_path):
+    with open(dict_path, 'rb') as handle:
+      self.cat_voc = pickle.load(handle)
+    with open(item_dict_path, 'rb') as handle:
+      self.items_voc = pickle.load(handle)
+    self.n_closest = n_closest
     self.metric = metric
 
   def fit(self, X):
     self.matrix = X
-	
-	
+    
+  def predict(user):
+    indexes = self.get_ids(self.matrix)
+    reccomended = [[key for key in self.cat_voc.keys() if self.cat_voc[key] == x] for x in indexes]
+    reccomended = [r[0] for r in reccomended]
+    items = dictCatItemId[reccomended[0]]
+    rec = random.sample(items, k=5)
+
+    
+    return rec, recommended[0]
 	
   def get_ids(database, user, n_closest, n_items, metric):
-	closest = get_close_users(database, user, n_closest, metric)
-	indexes = predict(user, closest, n_items)
-	return indexes
+    closest = get_close_users(database, user, n_closest, metric)
+    indexes = predict(user, closest, n_items)
+    return indexes
+
 
 	
-
-  def get_close_user(self, new_user):
-      dist = pairwise_distances(self.matrix, new_user, metric=self.metric)        
-      dist = dist.flatten()      
-      idx = np.argsort(dist)[:self.top_n]          
-      return self.matrix[idx]
-
-  def predict(self, new_user):
-    closest = self.get_close_user(new_user)
-    missing = np.where(new_user == 0)[0]
-
-    columns_max = closest.max(axis=0)
-    idx = np.argsort(columns_max)
-    return np.intersect1d(missing,idx)
-
   
