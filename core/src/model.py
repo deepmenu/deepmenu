@@ -1,12 +1,12 @@
 from sklearn.base import BaseEstimator
-import pysparnn.cluster_index as ci
+# import pysparnn.cluster_index as ci
 from sklearn.metrics import pairwise_distances
 import numpy as np
 import pickle
-
+import random
 
 def get_close_users(matrix, new_user, top_n=3, metric='euclidean'):
-    dist = pairwise_distances(matrix, new_user.reshape(1,-1), metric=metric)    
+    dist = pairwise_distances(matrix, new_user, metric=metric)    
     dist = dist.flatten()
     idx = np.argsort(dist)[:top_n]    
     return matrix[idx]
@@ -59,51 +59,53 @@ def get_ids(new_user, closest, top_n=2):
 #   def load(self, filename):
 #     self.annoy_index.load(filename)
 
-class OrderBasedModel(BaseEstimator):
-  """https://github.com/facebookresearch/pysparnn
-  """
+# class OrderBasedModel(BaseEstimator):
+#   """https://github.com/facebookresearch/pysparnn
+#   """
 
-  def __init__(self, n_neighbours=10):
-    self.n_neighbours = n_neighbours
+#   def __init__(self, n_neighbours=10):
+#     self.n_neighbours = n_neighbours
 
-  def fit(self, X, y):
-    self.cp = ci.MultiClusterIndex(X, y)
+#   def fit(self, X, y):
+#     self.cp = ci.MultiClusterIndex(X, y)
 
-  def predict(self, X):
-    self.cp.search(X, self.n_neighbours, True)
+#   def predict(self, X):
+#     self.cp.search(X, self.n_neighbours, True)
 
 
-import random
 
-class UserBasedModel:
-  pass
 
+# class UserBasedModel:
+#   pass
+
+
+BEST_METRIC = 'cosine'
 
 class DistancesModel:
-  def __init__(self, n_closest=4, n_items=2, metric='euclidian', dict_path, item_dict_path):
-    with open(dict_path, 'rb') as handle:
+  def __init__(self, VECT_VOCAB, CAT_ITEM_PATH, n_closest=4, n_items=2, metric=BEST_METRIC):
+    with open(VECT_VOCAB, 'rb') as handle:
       self.cat_voc = pickle.load(handle)
-    with open(item_dict_path, 'rb') as handle:
-      self.items_voc = pickle.load(handle)
+    with open(CAT_ITEM_PATH, 'rb') as handle:
+      self.cat_items_voc = pickle.load(handle)
     self.n_closest = n_closest
+    self.n_items = n_items
     self.metric = metric
 
   def fit(self, X):
     self.matrix = X
     
-  def predict(user):
-    indexes = self.get_ids(self.matrix)
-    reccomended = [[key for key in self.cat_voc.keys() if self.cat_voc[key] == x] for x in indexes]
-    reccomended = [r[0] for r in reccomended]
-    items = dictCatItemId[reccomended[0]]
-    rec = random.sample(items, k=5)
+  def predict(self, user):
+    indexes = self.get_indexes(self.matrix, user, self.n_closest, self.n_items, self.metric)
+    recommended = [[key for key in self.cat_voc.keys() if self.cat_voc[key] == x] for x in indexes]
+    recommended = [r[0] for r in recommended]
+    # items = self.cat_items_voc[indexes[0]]
+    items = self.cat_items_voc[recommended[0]]
+    rec_items = random.sample(items, k= min(5,len(items)))
+    return rec_items, recommended[0]
 
-    
-    return rec, recommended[0]
-	
-  def get_ids(database, user, n_closest, n_items, metric):
+  def get_indexes(self, database, user, n_closest, n_items, metric):
     closest = get_close_users(database, user, n_closest, metric)
-    indexes = predict(user, closest, n_items)
+    indexes = get_ids(user, closest, n_items)
     return indexes
 
 
