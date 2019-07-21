@@ -1,6 +1,7 @@
 from sklearn.base import BaseEstimator
 import pysparnn.cluster_index as ci
-
+from sklearn.metrics import pairwise_distances
+import numpy as np
 
 # from annoy import AnnoyIndex
 # class OrderBasedModel(BaseEstimator):
@@ -52,3 +53,28 @@ class OrderBasedModel(BaseEstimator):
 
 class UserBasedModel:
   pass
+
+
+class DistancesModel:
+  def __init__(self, top_n=4, metric='euclidian'):
+    self.top_n = top_n
+    self.metric = metric
+
+  def fit(self, X):
+    self.matrix = X
+
+  def get_close_user(self, new_user):
+      dist = pairwise_distances(self.matrix, new_user, metric=self.metric)        
+      dist = dist.flatten()      
+      idx = np.argsort(dist)[:self.top_n]          
+      return self.matrix[idx]
+
+  def predict(self, new_user):
+    closest = self.get_close_user(new_user)
+    missing = np.where(new_user == 0)[0]
+
+    columns_max = closest.max(axis=0)
+    idx = np.argsort(columns_max)
+    return np.intersect1d(missing,idx)
+
+  
