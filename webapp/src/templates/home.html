@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Data Tables</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+    integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+    integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+    integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+    crossorigin="anonymous"></script>
+
+  <script src="http://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+
+        <h2>DeepMenu</h2>
+        <div class="row">
+          {% for i in range(length) %}
+
+          {% if (i % col_num == 0) and (i != 0) %}
+        </div>
+        <div class="row">
+          {% endif %}
+
+          <div class="col-md-4 mb-5">
+            <div class="card h-100">
+              <!-- <img class="card-img-top" src="http://placehold.it/300x200" alt=""> -->
+              <!-- <img class="card-img-top" src="https://homepages.cae.wisc.edu/~ece533/images/tulips.png" alt=""> -->
+              <img class="card-img-top" src="https://foodrevolution.org/wp-content/uploads/2018/03/blog-featured_healthy_foods-20180306.jpg" alt="">
+              
+              
+              <div class="card-body">
+                <h4 class="card-title">{{items[i].name}}</h4>
+                <!-- <h4 class="card-title">Item Name</h4> -->
+                <!-- <h5 class="card-title" style="color:lightgrey; font-size:100%; font-style: italic" >{{items[i].name}}</h5> -->
+                <p class="card-text">{{items[i].description}}</p>
+              </div>
+              <div class="card-footer">
+                <form id='form' action="/pick">
+                  <input hidden=hidden id="id" value="{{items[i].id}}">
+                  <button id="submit" class="btn btn-primary" type="submit" value="Pick!">Pick! </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="content-section">
+          <h3>Recommendations</h3>
+          <p class='text-muted'>List of recommendations based on your choise.
+            <ul id='recommendations' class="list-group">
+              <li class='list-group-item list-group-item-light'> Choose first items...</li>
+            </ul>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <script>
+    $("form").submit(function (e) {
+
+      e.preventDefault(); // avoid to execute the actual submit of the form.
+
+      var form = $(this);
+      console.log()
+
+      var url = form.attr('action');
+
+      $.ajax({
+        type: "POST",
+        url: url,
+        data: form.find("input").val(), // serializes the form's elements.
+        success: function (data) {
+          $("#recommendations").empty()
+          const li = "<li class='list-group-item list-group-item-light'>";
+          for (let index = 0; index < data.length; index++) {
+            let new_li = li + data[index].name + " | " + data[index].description +  "</li>"
+            $("#recommendations").append(new_li)
+          }
+        }
+      });
+
+    });
+  </script>
+</body>
+
+</html>

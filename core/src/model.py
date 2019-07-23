@@ -1,30 +1,12 @@
 from sklearn.base import BaseEstimator
-# import pysparnn.cluster_index as ci
+
 from sklearn.metrics import pairwise_distances
 import numpy as np
 import pickle
 import random
 
-def get_close_users(matrix, new_user, top_n=3, metric='euclidean'):
-    dist = pairwise_distances(matrix, new_user, metric=metric)    
-    dist = dist.flatten()
-    idx = np.argsort(dist)[:top_n]    
-    return matrix[idx]
-	
-def get_ids(new_user, closest, top_n=2):
-    answer = []
-    missing = np.where(new_user == 0)
-    missing = np.array([x[1] for x in missing])
-    columns_max = closest.max(axis=0)
-    idx = np.argsort(columns_max)
-    unsorted = np.intersect1d(missing, idx)
-    buf = np.in1d(idx, missing)[::-1]
-    for i,item in enumerate(buf):
-        if item == True:
-            answer.append(idx[::-1][i])
-    
-    return answer[:top_n]
 
+# import pysparnn.cluster_index as ci
 # from annoy import AnnoyIndex
 # class OrderBasedModel(BaseEstimator):
 #   """https://github.com/spotify/annoy
@@ -73,10 +55,25 @@ def get_ids(new_user, closest, top_n=2):
 #     self.cp.search(X, self.n_neighbours, True)
 
 
-
-
-# class UserBasedModel:
-#   pass
+def get_close_users(matrix, new_user, top_n=3, metric='euclidean'):
+    dist = pairwise_distances(matrix, new_user, metric=metric)    
+    dist = dist.flatten()
+    idx = np.argsort(dist)[:top_n]    
+    return matrix[idx]
+	
+def get_ids(new_user, closest, top_n=2):
+    answer = []
+    missing = np.where(new_user == 0)
+    missing = np.array([x[1] for x in missing])
+    columns_max = closest.max(axis=0)
+    idx = np.argsort(columns_max)
+    unsorted = np.intersect1d(missing, idx)
+    buf = np.in1d(idx, missing)[::-1]
+    for i,item in enumerate(buf):
+        if item == True:
+            answer.append(idx[::-1][i])
+    
+    return answer[:top_n]
 
 
 BEST_METRIC = 'cosine'
